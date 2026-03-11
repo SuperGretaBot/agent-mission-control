@@ -11,6 +11,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 interface AgentCardProps {
   agent: Agent;
+  onClick?: () => void;
 }
 
 // ============================================
@@ -28,11 +29,14 @@ function formatUptime(ms?: number): string {
 // COMPONENT
 // ============================================
 
-export function AgentCard({ agent }: AgentCardProps) {
+export function AgentCard({ agent, onClick }: AgentCardProps) {
   const lastSeen = formatDistanceToNow(new Date(agent.lastSeenAt), { addSuffix: true });
 
   return (
-    <div className="card border-glow hover:border-mission-accent transition-colors duration-300">
+    <div 
+      className="card border-glow hover:border-mission-accent transition-colors duration-300 cursor-pointer"
+      onClick={onClick}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">

@@ -1,4 +1,5 @@
 export { AgentCard } from './AgentCard/AgentCard';
+export { AgentModal } from './AgentModal/AgentModal';
 export { Header } from './Header/Header';
 export { LogViewer } from './LogViewer/LogViewer';
 export { MetricsCard } from './MetricsCard/MetricsCard';

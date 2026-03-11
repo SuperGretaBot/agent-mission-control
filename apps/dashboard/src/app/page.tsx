@@ -1,9 +1,11 @@
 'use client';
 
-import { Header, AgentCard, LogViewer, TaskList } from '@/components';
+import { useState } from 'react';
+import { Header, AgentCard, AgentModal, LogViewer, TaskList } from '@/components';
 import { useAgentStore } from '@/store/agent.store';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { AlertTriangle } from 'lucide-react';
+import type { Agent } from '@/types/agent.types';
 
 // ============================================
 // MAIN DASHBOARD
@@ -11,6 +13,7 @@ import { AlertTriangle } from 'lucide-react';
 
 export default function Dashboard() {
   const { agents, logs, tasks } = useAgentStore();
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
   // Load data once on mount (no polling)
   useWebSocket();
@@ -43,7 +46,7 @@ export default function Dashboard() {
                 </h2>
                 <div className="space-y-4">
                   {runningAgents.map((agent) => (
-                    <AgentCard key={agent.id} agent={agent} />
+                    <AgentCard key={agent.id} agent={agent} onClick={() => setSelectedAgent(agent)} />
                   ))}
                   {runningAgents.length === 0 && (
                     <div className="card text-center text-mission-text-muted text-sm py-8">
@@ -61,7 +64,7 @@ export default function Dashboard() {
                 </h2>
                 <div className="space-y-4">
                   {idleAgents.map((agent) => (
-                    <AgentCard key={agent.id} agent={agent} />
+                    <AgentCard key={agent.id} agent={agent} onClick={() => setSelectedAgent(agent)} />
                   ))}
                   {idleAgents.length === 0 && (
                     <div className="card text-center text-mission-text-muted text-sm py-8">
@@ -79,10 +82,10 @@ export default function Dashboard() {
                 </h2>
                 <div className="space-y-4">
                   {errorAgents.map((agent) => (
-                    <AgentCard key={agent.id} agent={agent} />
+                    <AgentCard key={agent.id} agent={agent} onClick={() => setSelectedAgent(agent)} />
                   ))}
                   {offlineAgents.map((agent) => (
-                    <AgentCard key={agent.id} agent={agent} />
+                    <AgentCard key={agent.id} agent={agent} onClick={() => setSelectedAgent(agent)} />
                   ))}
                   {offlineAgents.length + errorAgents.length === 0 && (
                     <div className="card text-center text-mission-success text-sm py-8">
@@ -134,6 +137,11 @@ export default function Dashboard() {
           AGENT MISSION CONTROL v1.0 • YERO TECH LAB 🧪
         </p>
       </footer>
+
+      {/* Agent Modal */}
+      {selectedAgent && (
+        <AgentModal agent={selectedAgent} onClose={() => setSelectedAgent(null)} />
+      )}
     </div>
   );
 }

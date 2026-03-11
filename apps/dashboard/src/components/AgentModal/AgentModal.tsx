@@ -51,12 +51,14 @@ export function AgentModal({ agent, onClose }: AgentModalProps) {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
-  const levelColors = {
-    debug: 'text-mission-text-muted',
-    info: 'text-mission-accent',
-    warn: 'text-mission-warning',
-    error: 'text-mission-error',
+  // Agent colors
+  const agentColors: Record<string, string> = {
+    tonybot: 'text-blue-400',
+    gretabot: 'text-orange-400',
+    romabot: 'text-purple-400',
   };
+  
+  const agentColor = agentColors[agent.id.toLowerCase()] || 'text-mission-accent';
 
   return (
     <div 
@@ -83,7 +85,7 @@ export function AgentModal({ agent, onClose }: AgentModalProps) {
               <h2 className="font-display text-xl font-bold text-mission-text-primary">
                 {agent.name}
               </h2>
-              <p className="text-sm text-mission-text-muted">{agent.host}</p>
+              <p className={`text-sm font-medium ${agentColor}`}>{agent.host}</p>
             </div>
           </div>
           <button
@@ -145,22 +147,27 @@ export function AgentModal({ agent, onClose }: AgentModalProps) {
               <p className="text-center text-mission-text-muted py-8">No logs today</p>
             ) : (
               <div className="space-y-2">
-                {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="flex items-start gap-3 p-2 rounded bg-mission-surface/50 hover:bg-mission-surface transition-colors"
-                  >
-                    <span className="flex-shrink-0 text-xs text-mission-text-muted font-mono">
-                      {format(parseISO(log.timestamp), 'HH:mm:ss')}
-                    </span>
-                    <span className={`flex-shrink-0 text-xs font-medium uppercase w-12 ${levelColors[log.level]}`}>
-                      {log.level}
-                    </span>
-                    <span className="text-sm text-mission-text-primary flex-1">
-                      {log.message}
-                    </span>
-                  </div>
-                ))}
+                {logs.map((log) => {
+                  const isError = log.level === 'error';
+                  const colorClass = isError ? 'text-mission-error' : agentColor;
+                  
+                  return (
+                    <div
+                      key={log.id}
+                      className="flex items-start gap-3 p-2 rounded bg-mission-surface/50 hover:bg-mission-surface transition-colors"
+                    >
+                      <span className="flex-shrink-0 text-xs text-mission-text-muted font-mono">
+                        {format(parseISO(log.timestamp), 'HH:mm:ss')}
+                      </span>
+                      <span className={`flex-shrink-0 text-xs font-medium uppercase w-12 ${colorClass}`}>
+                        {log.level}
+                      </span>
+                      <span className={`text-sm flex-1 ${colorClass}`}>
+                        {log.message}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

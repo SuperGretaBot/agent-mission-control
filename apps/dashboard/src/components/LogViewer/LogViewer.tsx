@@ -19,11 +19,15 @@ interface LogViewerProps {
 // HELPERS
 // ============================================
 
-const levelClasses = {
-  debug: 'log-debug',
-  info: 'log-info',
-  warn: 'log-warn',
-  error: 'log-error',
+// Agent colors
+const agentColors: Record<string, string> = {
+  tonybot: 'text-blue-400',
+  gretabot: 'text-orange-400',
+  romabot: 'text-purple-400',
+};
+
+const getAgentColor = (agentId: string): string => {
+  return agentColors[agentId.toLowerCase()] || 'text-mission-accent';
 };
 
 const levelIcons = {
@@ -54,31 +58,36 @@ export function LogViewer({
         {logs.length === 0 ? (
           <p className="text-mission-text-muted text-center py-4">No logs yet</p>
         ) : (
-          logs.map((log) => (
-            <div
-              key={log.id}
-              className={clsx(
-                'flex items-start gap-2 py-1 px-2 rounded hover:bg-mission-surface transition-colors',
-                levelClasses[log.level]
-              )}
-            >
-              <span className="flex-shrink-0 w-4 text-center">
-                {levelIcons[log.level]}
-              </span>
-              
-              <span className="flex-shrink-0 text-mission-text-muted w-16">
-                {format(new Date(log.timestamp), 'HH:mm:ss')}
-              </span>
-              
-              {showAgent && (
-                <span className="flex-shrink-0 text-mission-accent w-20 truncate">
-                  [{log.agentId}]
+          logs.map((log) => {
+            const isError = log.level === 'error';
+            const colorClass = isError ? 'text-mission-error' : getAgentColor(log.agentId);
+            
+            return (
+              <div
+                key={log.id}
+                className={clsx(
+                  'flex items-start gap-2 py-1 px-2 rounded hover:bg-mission-surface transition-colors',
+                  colorClass
+                )}
+              >
+                <span className={clsx('flex-shrink-0 w-4 text-center', colorClass)}>
+                  {levelIcons[log.level]}
                 </span>
-              )}
-              
-              <span className="flex-1 break-words">{log.message}</span>
-            </div>
-          ))
+                
+                <span className="flex-shrink-0 text-mission-text-muted w-16">
+                  {format(new Date(log.timestamp), 'HH:mm:ss')}
+                </span>
+                
+                {showAgent && (
+                  <span className={clsx('flex-shrink-0 w-20 truncate font-medium', colorClass)}>
+                    [{log.agentId}]
+                  </span>
+                )}
+                
+                <span className={clsx('flex-1 break-words', colorClass)}>{log.message}</span>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

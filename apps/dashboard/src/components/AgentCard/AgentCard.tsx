@@ -18,6 +18,17 @@ interface AgentCardProps {
 // HELPERS
 // ============================================
 
+// Agent colors
+const agentColors: Record<string, string> = {
+  tonybot: 'text-blue-400',
+  gretabot: 'text-orange-400',
+  romabot: 'text-purple-400',
+};
+
+const getAgentColor = (agentId: string): string => {
+  return agentColors[agentId.toLowerCase()] || 'text-mission-text-muted';
+};
+
 function formatUptime(ms?: number): string {
   if (!ms) return '--';
   const hours = Math.floor(ms / 3600000);
@@ -51,7 +62,7 @@ export function AgentCard({ agent, onClick }: AgentCardProps) {
             <h3 className="font-display font-bold text-mission-text-primary">
               {agent.name}
             </h3>
-            <p className="text-xs text-mission-text-muted">{agent.host}</p>
+            <p className={`text-xs font-medium ${getAgentColor(agent.id)}`}>{agent.host}</p>
           </div>
         </div>
         <StatusBadge status={agent.status} size="lg" />

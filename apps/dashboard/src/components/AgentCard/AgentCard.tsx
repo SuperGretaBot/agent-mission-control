@@ -36,9 +36,9 @@ export function AgentCard({ agent }: AgentCardProps) {
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-lg bg-mission-surface flex items-center justify-center border border-mission-border">
+          <div className="w-12 h-12 rounded-lg bg-mission-surface flex items-center justify-center border border-mission-border overflow-hidden">
             {agent.avatar ? (
-              <img src={agent.avatar} alt={agent.name} className="w-8 h-8 rounded" />
+              <img src={agent.avatar} alt={agent.name} className="w-full h-full object-cover" />
             ) : (
               <Bot className="w-6 h-6 text-mission-accent" />
             )}

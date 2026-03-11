@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Header, AgentCard, LogViewer, TaskList } from '@/components';
 import { useAgentStore } from '@/store/agent.store';
 import { useWebSocket } from '@/hooks/useWebSocket';
-import { apiService } from '@/services/api.service';
 import { AlertTriangle } from 'lucide-react';
 
 // ============================================
@@ -12,44 +10,10 @@ import { AlertTriangle } from 'lucide-react';
 // ============================================
 
 export default function Dashboard() {
-  const { agents, logs, tasks, setAgents, setLogs, setTasks, setStats } = useAgentStore();
+  const { agents, logs, tasks } = useAgentStore();
 
-  // Connect WebSocket
+  // Load data once on mount (no polling)
   useWebSocket();
-
-  // Initial data fetch
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [agentsRes, logsRes, tasksRes] = await Promise.all([
-          apiService.getAgents(),
-          apiService.getLogs(50),
-          apiService.getTasks(30),
-        ]);
-
-        setAgents(agentsRes.agents);
-        setStats(agentsRes.stats);
-        setLogs(logsRes.logs);
-        setTasks(tasksRes.tasks);
-      } catch (error) {
-        console.error('Failed to fetch initial data:', error);
-      }
-    };
-
-    fetchData();
-
-    // Refresh stats every 30 seconds
-    const interval = setInterval(async () => {
-      try {
-        const statsRes = await apiService.getStats();
-        setStats(statsRes.stats);
-      } catch (error) {
-        console.error('Failed to refresh stats:', error);
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [setAgents, setLogs, setTasks, setStats]);
 
   // Separate agents by status for kanban-style view
   const runningAgents = agents.filter((a) => a.status === 'running');

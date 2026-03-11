@@ -1,55 +1,43 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useAgentStore } from '@/store/agent.store';
 import { apiService } from '@/services/api.service';
 
 // ============================================
-// POLLING HOOK (Cloudflare Workers compatible)
+// DATA FETCH HOOK (load once on mount)
 // ============================================
 
 export function useWebSocket() {
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const { setAgents, setLogs, setStats, setConnected } = useAgentStore();
 
-  const poll = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
+      console.log('[Fetch] Loading data from API...');
       const [agentsRes, logsRes] = await Promise.all([
         apiService.getAgents(),
         apiService.getLogs(50),
       ]);
 
+      console.log('[Fetch] Agents:', agentsRes.agents);
       setAgents(agentsRes.agents);
       setStats(agentsRes.stats);
       setLogs(logsRes.logs);
       setConnected(true);
     } catch (error) {
-      console.error('[Poll] Failed:', error);
+      console.error('[Fetch] Failed:', error);
       setConnected(false);
     }
   }, [setAgents, setLogs, setStats, setConnected]);
 
   useEffect(() => {
-    // Initial fetch
-    poll();
-
-    // Poll every 5 seconds
-    intervalRef.current = setInterval(poll, 5000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [poll]);
+    // Fetch data once on mount
+    fetchData();
+  }, [fetchData]);
 
   return {
     isConnected: true,
-    reconnect: poll,
-    disconnect: () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    },
+    reconnect: fetchData,
+    disconnect: () => {},
   };
 }

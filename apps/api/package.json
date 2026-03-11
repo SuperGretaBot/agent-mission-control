@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --dts",
+    "build": "tsup src/server.ts --format esm",
+    "postinstall": "npm run build",
     "start": "node dist/server.js",
     "lint": "eslint src/",
     "clean": "rm -rf dist"
@@ -16,7 +17,8 @@
     "@fastify/cors": "^9.0.0",
     "@fastify/env": "^4.3.0",
     "zod": "^3.22.4",
-    "nanoid": "^5.0.4"
+    "nanoid": "^5.0.4",
+    "pino-pretty": "^10.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

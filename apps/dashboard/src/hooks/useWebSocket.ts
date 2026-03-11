@@ -2,130 +2,54 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useAgentStore } from '@/store/agent.store';
-import type { WSEvent, Agent, AgentLog } from '@/types/agent.types';
+import { apiService } from '@/services/api.service';
 
 // ============================================
-// WEBSOCKET HOOK
+// POLLING HOOK (Cloudflare Workers compatible)
 // ============================================
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
 
 export function useWebSocket() {
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { updateAgent, addLog, setConnected } = useAgentStore();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { setAgents, setLogs, setStats, setConnected } = useAgentStore();
 
-  const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
-
+  const poll = useCallback(async () => {
     try {
-      const ws = new WebSocket(`${WS_URL}/ws`);
-      wsRef.current = ws;
+      const [agentsRes, logsRes] = await Promise.all([
+        apiService.getAgents(),
+        apiService.getLogs(50),
+      ]);
 
-      ws.onopen = () => {
-        console.log('[WS] Connected to Mission Control');
-        setConnected(true);
-
-        // Clear any pending reconnect
-        if (reconnectTimeoutRef.current) {
-          clearTimeout(reconnectTimeoutRef.current);
-          reconnectTimeoutRef.current = null;
-        }
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data: WSEvent = JSON.parse(event.data);
-          
-          switch (data.type) {
-            case 'connected':
-              console.log('[WS] Welcome:', data.message);
-              break;
-            
-            case 'agent:registered':
-            case 'agent:updated':
-              if (data.payload) {
-                updateAgent(data.payload as Agent);
-              }
-              break;
-            
-            case 'agent:log':
-              if (data.payload) {
-                addLog(data.payload as AgentLog);
-              }
-              break;
-            
-            case 'pong':
-              // Heartbeat response
-              break;
-            
-            default:
-              console.log('[WS] Event:', data.type, data.payload);
-          }
-        } catch (error) {
-          console.error('[WS] Failed to parse message:', error);
-        }
-      };
-
-      ws.onclose = () => {
-        console.log('[WS] Disconnected');
-        setConnected(false);
-        wsRef.current = null;
-
-        // Reconnect after 3 seconds
-        reconnectTimeoutRef.current = setTimeout(() => {
-          console.log('[WS] Attempting reconnect...');
-          connect();
-        }, 3000);
-      };
-
-      ws.onerror = (error) => {
-        console.error('[WS] Error:', error);
-      };
+      setAgents(agentsRes.agents);
+      setStats(agentsRes.stats);
+      setLogs(logsRes.logs);
+      setConnected(true);
     } catch (error) {
-      console.error('[WS] Failed to connect:', error);
+      console.error('[Poll] Failed:', error);
       setConnected(false);
-
-      // Retry after 5 seconds
-      reconnectTimeoutRef.current = setTimeout(connect, 5000);
     }
-  }, [updateAgent, addLog, setConnected]);
-
-  const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-    
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    
-    setConnected(false);
-  }, [setConnected]);
-
-  const sendPing = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'ping' }));
-    }
-  }, []);
+  }, [setAgents, setLogs, setStats, setConnected]);
 
   useEffect(() => {
-    connect();
+    // Initial fetch
+    poll();
 
-    // Heartbeat every 30 seconds
-    const heartbeat = setInterval(sendPing, 30000);
+    // Poll every 5 seconds
+    intervalRef.current = setInterval(poll, 5000);
 
     return () => {
-      clearInterval(heartbeat);
-      disconnect();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [connect, disconnect, sendPing]);
+  }, [poll]);
 
   return {
-    isConnected: wsRef.current?.readyState === WebSocket.OPEN,
-    reconnect: connect,
-    disconnect,
+    isConnected: true,
+    reconnect: poll,
+    disconnect: () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    },
   };
 }

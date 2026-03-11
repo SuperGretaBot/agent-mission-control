@@ -4,7 +4,7 @@ import type { Agent, AgentLog, Task, SystemStats } from '@/types/agent.types';
 // API CONFIG
 // ============================================
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://agent-mission-control-api.gretabot.workers.dev';
 
 // ============================================
 // API RESPONSES

@@ -1,0 +1,9 @@
+name = "agent-mission-control-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+account_id = "d6a8c33ba3919e175ea1d112f69d3873"
+
+# KV Namespace for storing agent data
+[[kv_namespaces]]
+binding = "AGENTS_KV"
+id = "850dfddd8834491c8b79679fa74b75cb"

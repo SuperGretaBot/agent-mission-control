@@ -62,11 +62,11 @@ export function AgentModal({ agent, onClose }: AgentModalProps) {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-mission-card border border-mission-border rounded-xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl"
+        className="bg-mission-card border border-mission-border rounded-t-xl sm:rounded-xl w-full sm:max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -97,7 +97,7 @@ export function AgentModal({ agent, onClose }: AgentModalProps) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 p-4 border-b border-mission-border">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 p-3 sm:p-4 border-b border-mission-border">
           <div className="text-center">
             <p className="text-2xl font-display font-bold text-mission-accent">
               {agent.status === 'running' ? '🔵' : agent.status === 'idle' ? '🟢' : '⚪'}

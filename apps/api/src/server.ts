@@ -8,7 +8,7 @@ import { wsService } from './services/websocket.service.js';
 // SERVER CONFIG
 // ============================================
 
-const PORT = Number(process.env.API_PORT) || 3001;
+const PORT = Number(process.env.PORT) || Number(process.env.API_PORT) || 3001;
 const HOST = process.env.API_HOST || '0.0.0.0';
 
 // ============================================
